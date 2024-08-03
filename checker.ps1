@@ -32,9 +32,9 @@ function Check-Services {
             }
 
             if ($isRunning) {
-                Write-Host "- $service - Fut: Igen | Indításmódja: $startTypeReadable" -ForegroundColor Green
+                Write-Host "- $service - Fut: Igen | Indítás Módja: $startTypeReadable" -ForegroundColor Green
             } else {
-                Write-Host "- $service - Fut: Nem | Indításmódja: $startTypeReadable" -ForegroundColor Red
+                Write-Host "- $service - Fut: Nem | Indítás Módja: $startTypeReadable" -ForegroundColor Red
             }
         } catch {
             Write-Output "- $service - Szolgáltatás nem található" -ForegroundColor Red
