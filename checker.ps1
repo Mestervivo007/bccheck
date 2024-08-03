@@ -11,12 +11,12 @@ Write-Host @"
                                            
 "@ -ForegroundColor Cyan
 
-Write-Host "Made by George;Carpel for Balkercraft"
+Write-Host "Made by George for Balkercraft" -ForegroundColor Cyan
 
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
 function Check-Services {
-    Write-Output "BalkerCraft Service Checker"
+    Write-Output "BalkerCraft Service Checker"-ForegroundColor Cyan
     foreach ($service in $services) {
         try {
             $serviceObj = Get-Service -Name $service
