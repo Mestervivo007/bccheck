@@ -11,7 +11,7 @@ Write-Host @"
                                            
 "@ -ForegroundColor Cyan
 
-Write-Host "Made by George for Balkercraft`n" -ForegroundColor orange
+Write-Host "Made by George for Balkercraft" -ForegroundColor yellow `n
 
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
@@ -48,7 +48,7 @@ function Enable-And-Start-Services {
             Set-Service -Name $service -StartupType Automatic
             Start-Service -Name $service -ErrorAction SilentlyContinue
         } catch {
-            Write-Output "Failed to enable or start $service" -ForegroundColor Red
+            Write-Output "Failed to enable or start $service" 
         }
     }
     Write-Output "All services have been set to start automatically and started if not already running."
