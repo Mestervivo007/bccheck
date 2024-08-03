@@ -11,7 +11,7 @@ Write-Host @"
                                            
 "@ -ForegroundColor Cyan
 
-Write-Host "Made by George for Balkercraft" -ForegroundColor Cyan
+Write-Host "Made by George for Balkercraft" 
 
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
@@ -51,7 +51,7 @@ function Enable-And-Start-Services {
             Write-Output "Nem sikerült elindítani a(z) $service szolgáltatást" 
         }
     }
-    Write-Output "Szolgáltatások elindítása sikeresen megtörtént" -ForegroundColor Green
+    Write-Output "Szolgáltatások elindítása sikeresen megtörtént" 
 }
 
 Check-Services
