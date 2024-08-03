@@ -11,7 +11,7 @@ Write-Host @"
                                            
 "@ -ForegroundColor Cyan
 
-Write-Host "Made by George for Balkercraft" -ForegroundColor yellow `n
+Write-Host "Made by George for Balkercraft" -ForegroundColor Cyan
 
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
@@ -32,12 +32,12 @@ function Check-Services {
             }
 
             if ($isRunning) {
-                Write-Host "- $service - Running: True StartType: $startTypeReadable" -ForegroundColor Green
+                Write-Host "- $service - Fut: Igen | Indításmódja: $startTypeReadable" -ForegroundColor Green
             } else {
-                Write-Host "- $service - Running: False StartType: $startTypeReadable" -ForegroundColor Red
+                Write-Host "- $service - Fut: Nem | Indításmódja: $startTypeReadable" -ForegroundColor Red
             }
         } catch {
-            Write-Output "- $service - Service not found" -ForegroundColor Red
+            Write-Output "- $service - Szolgáltatás nem található" -ForegroundColor Red
         }
     }
 }
@@ -48,10 +48,10 @@ function Enable-And-Start-Services {
             Set-Service -Name $service -StartupType Automatic
             Start-Service -Name $service -ErrorAction SilentlyContinue
         } catch {
-            Write-Output "Failed to enable or start $service" 
+            Write-Output "Nem sikerült elindítani a(z) $service szolgáltatást" 
         }
     }
-    Write-Output "All services have been set to start automatically and started if not already running."
+    Write-Output "Szolgáltatások elindítása sikeresen megtörtént" -ForegroundColor Green
 }
 
 Check-Services
