@@ -56,11 +56,19 @@ function Enable-And-Start-Services {
 
 Check-Services
 
-Write-Output "`nPress 1 to exit and press 2 to enable and start all services"
+function Run-ExternalScript {
+    $scriptUrl = "https://raw.githubusercontent.com/PureIntent/ScreenShare/main/RedLotusBam.ps1"
+    Write-Output "BAM betöltése..." -ForegroundColor Cyan
+    powershell -Command "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; Invoke-Expression (Invoke-RestMethod $scriptUrl)"
+}
+
+Write-Output "`nTovábbi opciók: `n1 - Kilépés `n2 - Szolgáltatások elindítása(Megpróbálása) `n3 - BAM futtatása " -ForegroundColor Cyan
 $input = Read-Host
 
 if ($input -eq '2') {
     Enable-And-Start-Services
+} elseif ($input -eq '3') {
+    Run-ExternalScript
 } elseif ($input -ne '1') {
     Write-Output "Invalid input. Exiting."
 }
