@@ -62,7 +62,7 @@ function Run-ExternalScript {
     powershell -Command "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; Invoke-Expression (Invoke-RestMethod $scriptUrl)"
 }
 
-$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"
+$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\"
 $tcpipValueName = "TCPI"
 
 try {
@@ -73,7 +73,7 @@ try {
         Write-Output "TCPI értéke 1 vagy kevesebb: $($tcpipValue.$tcpipValueName)" -ForegroundColor Green
     }
 } catch {
-    Write-Output "Nem sikerült lekérdezni a TCPI értéket vagy a bejegyzés nem található." -ForegroundColor Cyan
+    Write-Output "Nem sikerült lekérdezni a TCPI értéket vagy a bejegyzés nem található." 
 }
 
 
