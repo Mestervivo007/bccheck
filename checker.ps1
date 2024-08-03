@@ -16,7 +16,7 @@ Write-Host "Made by George for Balkercraft" -ForegroundColor Cyan
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
 function Check-Services {
-    Write-Output "BalkerCraft Service Checker" -ForegroundColor Cyan
+    Write-Output "`nBalkerCraft Service Checker" 
     foreach ($service in $services) {
         try {
             $serviceObj = Get-Service -Name $service
@@ -62,7 +62,7 @@ function Run-ExternalScript {
     powershell -Command "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; Invoke-Expression (Invoke-RestMethod $scriptUrl)"
 }
 
-Write-Output "`nTovábbi opciók: `n1 - Kilépés `n2 - Szolgáltatások elindítása(Megpróbálása) `n3 - BAM futtatása " -ForegroundColor Cyan
+Write-Output "`nTovábbi opciók: `n1 - Kilépés `n2 - Szolgáltatások elindítása(Megpróbálása) `n3 - BAM futtatása " 
 $input = Read-Host
 
 if ($input -eq '2') {
