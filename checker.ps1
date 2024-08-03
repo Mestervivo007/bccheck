@@ -58,7 +58,7 @@ Check-Services
 
 function Run-ExternalScript {
     $scriptUrl = "https://raw.githubusercontent.com/PureIntent/ScreenShare/main/RedLotusBam.ps1"
-    Write-Output "BAM betöltése..." -ForegroundColor Cyan
+    Write-Output "BAM betöltése..." 
     powershell -Command "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; Invoke-Expression (Invoke-RestMethod $scriptUrl)"
 }
 
