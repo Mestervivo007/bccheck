@@ -63,18 +63,19 @@ function Run-ExternalScript {
 }
 
 $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\"
-$tcpipValueName = "TCPI"
+$valueName = "TcpAckFrequency"
 
 try {
-    $tcpipValue = Get-ItemProperty -Path $registryPath -Name $tcpipValueName -ErrorAction Stop
-    if ($tcpipValue.$tcpipValueName -gt 1) {
-        Write-Output "TCPI értéke nagyobb mint 1: $($tcpipValue.$tcpipValueName)" -ForegroundColor Red
+    $value = Get-ItemProperty -Path $registryPath -Name $valueName -ErrorAction Stop
+    if ($value.$valueName -gt 0) {
+        Write-Output "TcpAckFrequency értéke nagyobb, mint 0: $($value.$valueName)"
     } else {
-        Write-Output "TCPI értéke 1 vagy kevesebb: $($tcpipValue.$tcpipValueName)" -ForegroundColor Green
+        Write-Output "TcpAckFrequency értéke 0 vagy kisebb: $($value.$valueName)"
     }
 } catch {
-    Write-Output "Nem sikerült lekérdezni a TCPI értéket vagy a bejegyzés nem található." 
+    Write-Output "Nem sikerült lekérdezni a TcpAckFrequency értéket vagy a bejegyzés nem található."
 }
+
 
 
 
