@@ -30,9 +30,14 @@ function Check-Services {
                 'Disabled' { 'Disabled' }
                 default { 'Unknown' }
             }
-            Write-Output "- $service - Running: $isRunning StartType: $startTypeReadable"
+
+            if ($isRunning) {
+                Write-Host "- $service - Running: True StartType: $startTypeReadable" -ForegroundColor Green
+            } else {
+                Write-Host "- $service - Running: False StartType: $startTypeReadable" -ForegroundColor Red
+            }
         } catch {
-            Write-Output "- $service - Service not found"
+            Write-Output "- $service - Service not found" -ForegroundColor Red
         }
     }
 }
@@ -43,7 +48,7 @@ function Enable-And-Start-Services {
             Set-Service -Name $service -StartupType Automatic
             Start-Service -Name $service -ErrorAction SilentlyContinue
         } catch {
-            Write-Output "Failed to enable or start $service"
+            Write-Output "Failed to enable or start $service" -ForegroundColor Red
         }
     }
     Write-Output "All services have been set to start automatically and started if not already running."
