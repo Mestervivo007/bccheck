@@ -11,12 +11,12 @@ Write-Host @"
                                            
 "@ -ForegroundColor Cyan
 
-Write-Host "Made by George for Balkercraft" 
+Write-Host "Made by Mestervivo for Heaven RolePlay" 
 
-$services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
+$services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog', 'bfi')
 
 function Check-Services {
-    Write-Output "`nBalkerCraft Service Checker" 
+    Write-Output "`nHRP Service Checker" 
     foreach ($service in $services) {
         try {
             $serviceObj = Get-Service -Name $service
@@ -61,23 +61,6 @@ function Run-ExternalScript {
     Write-Output "BAM betöltése..." 
     powershell -Command "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; Invoke-Expression (Invoke-RestMethod $scriptUrl)"
 }
-
-$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\"
-$valueName = "TcpAckFrequency"
-
-try {
-    $value = Get-ItemProperty -Path $registryPath -Name $valueName -ErrorAction Stop
-    if ($value.$valueName -gt 0) {
-        Write-Output "TcpAckFrequency értéke nagyobb, mint 0: $($value.$valueName)"
-    } else {
-        Write-Output "TcpAckFrequency értéke 0 vagy kisebb: $($value.$valueName)"
-    }
-} catch {
-    Write-Output "Nem sikerült lekérdezni a TcpAckFrequency értéket vagy a bejegyzés nem található."
-}
-
-
-
 
 Write-Output "`nTovábbi opciók: `n1 - Kilépés `n2 - Szolgáltatások elindítása(Megpróbálása) `n3 - BAM futtatása " 
 $input = Read-Host
