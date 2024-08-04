@@ -13,7 +13,7 @@ Write-Host @"
 
 Write-Host "Made by Mestervivo for Heaven RolePlay" 
 
-$services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog', 'Dnscache', 'Dhcp', 'WinDefend', 'Wecsvc',)
+$services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog', 'Dnscache', 'Dhcp', 'WinDefend', 'Wecsvc')
 
 function Check-Services {
     Write-Output "`nHRP Service Checker" 
