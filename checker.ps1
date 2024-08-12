@@ -1,5 +1,6 @@
 Clear-Host
 
+# Adminisztrátori jogosultság ellenőrzése
 function Test-Administrator {
     $isAdmin = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
     return $isAdmin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -7,13 +8,13 @@ function Test-Administrator {
 
 function Start-AsAdministrator {
     $arguments = "& '" + $myinvocation.MyCommand.Definition + "'"
-    Start-Process powershell -ArgumentList $arguments -Verb RunAs
+    Start-Process cmd.exe -ArgumentList "/c start /b powershell -Command $arguments" -Verb RunAs
 }
 
 if (-not (Test-Administrator)) {
     Write-Host "Az SS-tool adminisztrátori jogosultságokat igényel hibátlan müködésért. Kérlek futtasd újra a programot rendszergazdaként! -George" -ForegroundColor Red
     Write-Host "1 - Kilépés"
-    Write-Host "2 - Futtatás rendszergazdaként (Megpróbálás)"
+    Write-Host "2 - Áthelyezés adminisztrációs módban"
 
     $choice = Read-Host "Válasszon egy lehetőséget: "
 
@@ -187,7 +188,6 @@ function Run-ExternalScript {
 
 function Download-SSPrograms {
     Write-Host "`nSS programok letöltése..." -ForegroundColor Cyan
-    
     $urls = @(
         "https://github.com/Mestervivo007/bccheck/raw/main/USBDeview.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
@@ -220,6 +220,7 @@ function Show-Menu {
     Write-Output "7 - SS programok letöltése"
 } 
 
+# Main loop to keep showing the menu and process multiple selections
 do {
     Show-Menu
     $input = Read-Host "Válassz egy opciót: "
