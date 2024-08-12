@@ -159,6 +159,33 @@ function Run-ExternalScript {
     powershell -Command "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; Invoke-Expression (Invoke-RestMethod $scriptUrl)"
 }
 
+function Download-SSPrograms {
+    Write-Host "`nSS programok letöltése..." -ForegroundColor Cyan
+    
+    $urls = @(
+        "https://github.com/Mestervivo007/bccheck/raw/main/USBDeview.exe",
+        "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
+        "https://github.com/Mestervivo007/bccheck/raw/main/journal-tool.exe",
+        "https://github.com/Mestervivo007/bccheck/raw/main/Everything-1.4.1.1022.x64-Setup.exe"
+    )
+    
+    $destinationFolder = "C:\Users\$env:USERNAME\Downloads\SS-Tools\"
+
+    if (-not (Test-Path -Path $destinationFolder)) {
+        New-Item -ItemType Directory -Path $destinationFolder | Out-Null
+    }
+
+    foreach ($url in $urls) {
+        $fileName = Split-Path -Path $url -Leaf
+        $destinationPath = Join-Path -Path $destinationFolder -ChildPath $fileName
+
+        Write-Host "Letöltés: $fileName..." -ForegroundColor Yellow
+        Invoke-WebRequest -Uri $url -OutFile $destinationPath
+    }
+
+    Write-Host "SS programok sikeresen letöltve a $destinationFolder mappába." -ForegroundColor Green
+}
+
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
     Write-Output "1 - Kilépés" 
@@ -167,6 +194,7 @@ function Show-Menu {
     Write-Output "4 - BAM futtatása" 
     Write-Output "5 - Egér program vizsgálata" 
     Write-Output "6 - Prefetch logok ellenőrzése"
+    Write-Output "7 - SS programok letöltése"
 } 
 
 # Main loop to keep showing the menu and process multiple selections
@@ -180,6 +208,7 @@ do {
         '4' { Run-ExternalScript }
         '5' { Check-MousePrograms }
         '6' { Check-PrefetchLogs }
+        '7' { Download-SSPrograms }
         '1' { Write-Output "Kilépés..." }
         default { Write-Output "Ilyen lehetőség nincs koma" }
     }
