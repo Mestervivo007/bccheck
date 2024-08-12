@@ -1,6 +1,5 @@
 Clear-Host
 
-# Adminisztrátori jogosultság ellenőrzése
 function Test-Administrator {
     $isAdmin = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
     return $isAdmin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -19,7 +18,8 @@ if (-not (Test-Administrator)) {
     $choice = Read-Host "Válasszon egy lehetőséget: "
 
     if ($choice -eq '2') {
-        Start-AsAdministrator
+        $arguments = "& '" + $myinvocation.MyCommand.Definition + "'"
+        Start-Process cmd.exe -ArgumentList "/c start /b powershell -Command $arguments" -Verb RunAs
     } else {
         Write-Host "Kilépés..." -ForegroundColor Yellow
     }
@@ -220,7 +220,7 @@ function Show-Menu {
     Write-Output "7 - SS programok letöltése"
 } 
 
-# Main loop to keep showing the menu and process multiple selections
+
 do {
     Show-Menu
     $input = Read-Host "Válassz egy opciót: "
