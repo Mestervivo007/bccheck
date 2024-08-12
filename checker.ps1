@@ -1,4 +1,16 @@
 Clear-Host
+
+# Adminisztrátori jogosultság ellenőrzése
+function Test-Administrator {
+    $isAdmin = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+    return $isAdmin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+if (-not (Test-Administrator)) {
+    Write-Host "Ez a script adminisztrátori jogosultságokat igényel. Kérjük, futtasd újra a programot rendszergazdaként!" -ForegroundColor Red
+    exit
+}
+
 Write-Host @"
   ____        _ _              ____            __ _   
  | __ )  __ _| | | _____ _ __ / ___|_ __ __ _ / _| |_ 
@@ -171,19 +183,16 @@ function Download-SSPrograms {
     
     $destinationFolder = "C:\Users\$env:USERNAME\Downloads\SS-Tools\"
 
-    if (-not (Test-Path -Path $destinationFolder)) {
+    if (-not (Test-Path $destinationFolder)) {
         New-Item -ItemType Directory -Path $destinationFolder | Out-Null
     }
 
     foreach ($url in $urls) {
-        $fileName = Split-Path -Path $url -Leaf
+        $fileName = [System.IO.Path]::GetFileName($url)
         $destinationPath = Join-Path -Path $destinationFolder -ChildPath $fileName
-
-        Write-Host "Letöltés: $fileName..." -ForegroundColor Yellow
         Invoke-WebRequest -Uri $url -OutFile $destinationPath
+        Write-Host "Letöltve: $fileName" -ForegroundColor Green
     }
-
-    Write-Host "SS programok sikeresen letöltve a $destinationFolder mappába." -ForegroundColor Green
 }
 
 function Show-Menu { 
