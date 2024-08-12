@@ -196,7 +196,7 @@ function Download-SSPrograms {
         "https://github.com/Mestervivo007/bccheck/raw/main/Everything-1.4.1.1022.x64-Setup.exe"
     )
 
-    $destinationFolder = "$env:USERPROFILE\Downloads\SSPrograms"
+    $destinationFolder = "$env:USERPROFILE\Downloads\SS-Tools"
 
     if (-not (Test-Path $destinationFolder)) {
         New-Item -ItemType Directory -Path $destinationFolder | Out-Null
