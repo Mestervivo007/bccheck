@@ -1,3 +1,5 @@
+
+                                                      
 Clear-Host
 Write-Host @"
   ____        _ _              ____            __ _   
@@ -13,36 +15,10 @@ Write-Host "Made by George for Balkercraft"
 
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
-function Is-Windows11 {
-    $osVersion = (Get-ComputerInfo -Property "WindowsVersion").WindowsVersion
-    return $osVersion -ge 22000
-}
-
-function Get-LastStopTime {
-    param (
-        [string]$serviceName
-    )
-    $events = Get-WinEvent -LogName System -FilterHashtable @{ProviderName='Service Control Manager';Id=7036} -MaxEvents 1000 | 
-        Where-Object { $_.Message -match "$serviceName.*leállítva"}
-    
-    if ($events) {
-        return $events[0].TimeCreated
-    }
-    
-    return $null
-}
-
 function Check-Services {
     Write-Output "`nBalkerCraft Service Checker" 
-    $isWin11 = Is-Windows11
-
     foreach ($service in $services) {
         try {
-            if ($isWin11 -and $service -eq 'SgrmBroker') {
-                Write-Host "- $service - Szolgáltatás nem létezik (WIN11)" -ForegroundColor Yellow
-                continue
-            }
-
             $serviceObj = Get-Service -Name $service
             $startType = Get-WmiObject -Class Win32_Service -Filter "Name='$service'" | Select-Object -ExpandProperty StartMode
 
@@ -59,13 +35,9 @@ function Check-Services {
                 Write-Host "- $service - Fut: Igen | Indítás Módja: $startTypeReadable" -ForegroundColor Green
             } else {
                 Write-Host "- $service - Fut: Nem | Indítás Módja: $startTypeReadable" -ForegroundColor Red
-                $lastStopTime = Get-LastStopTime -serviceName $service
-                if ($lastStopTime) {
-                    Write-Host "  Utolsó leállítás időpontja: $lastStopTime" -ForegroundColor DarkYellow
-                }
             }
         } catch {
-            Write-Host "- $service - Szolgáltatás nem található" -ForegroundColor Red
+            Write-Output "- $service - Szolgáltatás nem található" -ForegroundColor Red
         }
     }
 }
