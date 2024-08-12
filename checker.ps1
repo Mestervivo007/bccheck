@@ -1,4 +1,30 @@
 Clear-Host
+
+function Test-Administrator {
+    $isAdmin = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+    return $isAdmin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Start-AsAdministrator {
+    $arguments = "& '" + $myinvocation.MyCommand.Definition + "'"
+    Start-Process powershell -ArgumentList $arguments -Verb RunAs
+}
+
+if (-not (Test-Administrator)) {
+    Write-Host "Az SS-tool adminisztrátori jogosultságokat igényel hibátlan müködésért. Kérlek futtasd újra a programot rendszergazdaként! -George" -ForegroundColor Red
+    Write-Host "1 - Kilépés"
+    Write-Host "2 - Futtatás rendszergazdaként (Megpróbálás)"
+
+    $choice = Read-Host "Válasszon egy lehetőséget: "
+
+    if ($choice -eq '2') {
+        Start-AsAdministrator
+    } else {
+        Write-Host "Kilépés..." -ForegroundColor Yellow
+    }
+    exit
+}
+
 Write-Host @"
   ____        _ _              ____            __ _   
  | __ )  __ _| | | _____ _ __ / ___|_ __ __ _ / _| |_ 
@@ -166,24 +192,22 @@ function Download-SSPrograms {
         "https://github.com/Mestervivo007/bccheck/raw/main/USBDeview.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/journal-tool.exe",
+        "https://github.com/Mestervivo007/bccheck/raw/main/procexp.exe",    
         "https://github.com/Mestervivo007/bccheck/raw/main/Everything-1.4.1.1022.x64-Setup.exe"
     )
-    
-    $destinationFolder = "C:\Users\$env:USERNAME\Downloads\SS-Tools\"
 
-    if (-not (Test-Path -Path $destinationFolder)) {
+    $destinationFolder = "$env:USERPROFILE\Downloads\SSPrograms"
+
+    if (-not (Test-Path $destinationFolder)) {
         New-Item -ItemType Directory -Path $destinationFolder | Out-Null
     }
 
     foreach ($url in $urls) {
-        $fileName = Split-Path -Path $url -Leaf
+        $fileName = [System.IO.Path]::GetFileName($url)
         $destinationPath = Join-Path -Path $destinationFolder -ChildPath $fileName
-
-        Write-Host "Letöltés: $fileName..." -ForegroundColor Yellow
         Invoke-WebRequest -Uri $url -OutFile $destinationPath
+        Write-Host "Letöltve: $fileName" -ForegroundColor Green
     }
-
-    Write-Host "SS programok sikeresen letöltve a $destinationFolder mappába." -ForegroundColor Green
 }
 
 function Show-Menu { 
@@ -197,7 +221,6 @@ function Show-Menu {
     Write-Output "7 - SS programok letöltése"
 } 
 
-# Main loop to keep showing the menu and process multiple selections
 do {
     Show-Menu
     $input = Read-Host "Válassz egy opciót: "
