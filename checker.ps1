@@ -52,8 +52,11 @@ function Check-Services {
     foreach ($service in $services) {
         try {
             if ($isWin11 -and $service -eq 'SgrmBroker') {
-                Write-Host "- $service - Szolgáltatás nem létezik (WIN11)" -ForegroundColor Yellow
-                continue
+                $serviceExists = Get-Service -Name $service -ErrorAction SilentlyContinue
+                if ($null -eq $serviceExists) {
+                    Write-Host "- $service - Szolgáltatás nem létezik (WIN11)" -ForegroundColor Yellow
+                    continue
+                }
             }
 
             $serviceObj = Get-Service -Name $service
@@ -81,6 +84,7 @@ function Check-Services {
     Check-Process-Uptime -ProcessName "javaw" -AltProcessName "java"
     Check-Process-Uptime -ProcessName "explorer"
 }
+
 
 function Check-Process-Uptime {
     param (
@@ -217,8 +221,6 @@ function Download-SSPrograms {
     }
 }
 
-
-# Call the function
 
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
