@@ -131,7 +131,14 @@ function Check-MousePrograms {
         "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
         "C:\Users\$env:USERNAME\AppData\Local\LGHUB\",
         "C:\Users\$env:USERNAME\AppData\Local\Razer\",
-        "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\"
+        "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\",
+        "C:\Program Files (x86)\Trust Gaming\",
+        "C:\Program Files\SteelSeries\SteelSeries Engine\",
+        "C:\Program Files (x86)\ZOWIE\",
+        "C:\Program Files (x86)\A4Tech\Mouse\",
+        "C:\Program Files\Cooler Master\Portal\",
+        "C:\Program Files (x86)\MSI\Dragon Center\",
+        "C:\Program Files (x86)\HyperX\Ngenuity\"
     )
 
     $found = $false
@@ -161,7 +168,7 @@ function Check-PrefetchLogs {
     Write-Host "`nPrefetch logok vizsgálata..." -ForegroundColor Cyan
     $tempPath = [System.IO.Path]::GetTempPath()
 
-    $filesToCheck = @("jnativehook*", "rar$ex*")
+    $filesToCheck = @("JNativeHook*", "rar$ex*")
     $found = $false
 
     foreach ($filePattern in $filesToCheck) {
@@ -209,6 +216,9 @@ function Download-SSPrograms {
         Write-Host "Letöltve: $fileName" -ForegroundColor Green
     }
 }
+
+
+# Call the function
 
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
