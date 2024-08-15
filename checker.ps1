@@ -5,9 +5,10 @@ function Test-Administrator {
     return $isAdmin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-function Start-AsAdministrator {
-    $arguments = "& '" + $myinvocation.MyCommand.Definition + "'"
-    Start-Process powershell -ArgumentList $arguments -Verb RunAs
+function Is-Windows11 {
+    $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+    $currentBuild = (Get-ItemProperty -Path $registryPath).CurrentBuild
+    return [int]$currentBuild -ge 22000
 }
 
 if (-not (Test-Administrator)) {
@@ -85,7 +86,6 @@ function Check-Services {
     Check-Process-Uptime -ProcessName "explorer"
 }
 
-
 function Check-Process-Uptime {
     param (
         [string]$ProcessName,
@@ -152,13 +152,13 @@ function Check-MousePrograms {
             $files = Get-ChildItem -Path $directory -File
             $modified = $false
             foreach ($file in $files) {
-                if ($file.LastWriteTime -gt (Get-Date).AddMinutes(-30)) {
+                if ($file.LastWriteTime -gt (Get-Date).AddMinutes(-60)) {
                     Write-Host "Egér program: $($directory) fájl módosítva: $($file.LastWriteTime)" -ForegroundColor Yellow
                     $modified = $true
                 }
             }
             if (-not $modified) {
-                Write-Host "Egér program: $($directory) Nem lett módosítva az elmúlt 30 percben" -ForegroundColor Green
+                Write-Host "Egér program: $($directory) Nem lett módosítva az elmúlt 60 percben" -ForegroundColor Green
             }
         }
     }
@@ -172,7 +172,7 @@ function Check-PrefetchLogs {
     Write-Host "`nPrefetch logok vizsgálata..." -ForegroundColor Cyan
     $tempPath = [System.IO.Path]::GetTempPath()
 
-    $filesToCheck = @("JNativeHook*", "rar$ex*")
+    $filesToCheck = @("JNativeHook*", "rar$ex*", "autoclicker.exe", "autoclicker", "AC.exe", "AC")
     $found = $false
 
     foreach ($filePattern in $filesToCheck) {
@@ -186,7 +186,7 @@ function Check-PrefetchLogs {
     }
 
     if (-not $found) {
-        Write-Host "Nem található jnativehook vagy rar$ex fájl a temp mappában." -ForegroundColor Green
+        Write-Host "Nem található gyanús fájl a temp mappában." -ForegroundColor Green
     }
 }
 
@@ -221,6 +221,28 @@ function Download-SSPrograms {
     }
 }
 
+function Get-MinecraftAlts {
+    Write-Host "`nMinecraft felhasználók összegyűjtése..." -ForegroundColor Cyan
+
+    $cachePath = "$env:APPDATA\.minecraft\usercache.json"
+    
+    if (-Not (Test-Path $cachePath)) {
+        Write-Host "Nem található usercache.json fájl" -ForegroundColor Red
+        return
+    }
+
+    $cacheContent = Get-Content -Path $cachePath | ConvertFrom-Json
+    $usernames = $cacheContent | ForEach-Object { $_.name }
+
+    if ($usernames.Count -eq 0) {
+        Write-Host "Nincsenek alternatív felhasználók" -ForegroundColor Green
+    } else {
+        Write-Host "Alternatív felhasználók:"
+        foreach ($username in $usernames) {
+            Write-Host "- $username" -ForegroundColor Yellow
+        }
+    }
+}
 
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
@@ -231,6 +253,7 @@ function Show-Menu {
     Write-Output "5 - Egér program vizsgálata" 
     Write-Output "6 - Prefetch logok ellenőrzése"
     Write-Output "7 - SS programok letöltése"
+    Write-Output "8 - Minecraft karakterek lekérése (work in progress)"
 } 
 
 do {
@@ -244,6 +267,7 @@ do {
         '5' { Check-MousePrograms }
         '6' { Check-PrefetchLogs }
         '7' { Download-SSPrograms }
+        '8' { Get-MinecraftAlts }
         '1' { Write-Output "Kilépés..." }
         default { Write-Output "Ilyen lehetőség nincs koma" }
     }
