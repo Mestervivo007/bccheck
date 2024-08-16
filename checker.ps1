@@ -172,7 +172,7 @@ function Check-PrefetchLogs {
     Write-Host "`nPrefetch logok vizsgálata..." -ForegroundColor Cyan
     $tempPath = [System.IO.Path]::GetTempPath()
 
-    $filesToCheck = @("JNativeHook*", "rar$ex*", "autoclicker.exe", "autoclicker", "AC.exe", "AC")
+    $filesToCheck = @("JNativeHook*", "rar$ex*", "autoclicker.exe", "autoclicker", "AC.exe", "AC", "1337clicker.exe")
     $found = $false
 
     foreach ($filePattern in $filesToCheck) {
@@ -237,7 +237,8 @@ function Get-MinecraftAlts {
     if ($usernames.Count -eq 0) {
         Write-Host "Nincsenek alternatív felhasználók" -ForegroundColor Green
     } else {
-        Write-Host "Alternatív felhasználók:"
+        Write-Host "EGYES KLIENS TÍPUSOKNÁL NEM MÜKÖDIK MEGFELELŐEN A USERCACHE! AMENNYIBEN TÖBB MINT 10 ALT TALÁLHATÓ BENNE NAGY ESÉLLYEL FALSE ADATOK!" -ForegroundColor Yellow
+        Write-Host "`nAlternatív felhasználók:"
         foreach ($username in $usernames) {
             Write-Host "- $username" -ForegroundColor Yellow
         }
@@ -253,7 +254,7 @@ function Show-Menu {
     Write-Output "5 - Egér program vizsgálata" 
     Write-Output "6 - Prefetch logok ellenőrzése"
     Write-Output "7 - SS programok letöltése"
-    Write-Output "8 - Minecraft karakterek lekérése (work in progress)"
+    Write-Output "8 - Minecraft karakterek lekérése"
 } 
 
 do {
