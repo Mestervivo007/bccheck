@@ -12,18 +12,7 @@ function Is-Windows11 {
 }
 
 if (-not (Test-Administrator)) {
-    Write-Host "Az SS-tool adminisztrátori jogosultságokat igényel hibátlan müködésért. Kérlek futtasd újra a programot rendszergazdaként! -George" -ForegroundColor Red
-    Write-Host "1 - Kilépés"
-    Write-Host "2 - Futtatás rendszergazdaként (Megpróbálás)"
-
-    $choice = Read-Host "Válasszon egy lehetőséget: "
-
-    if ($choice -eq '2') {
-        Start-AsAdministrator
-    } else {
-        Write-Host "Kilépés..." -ForegroundColor Yellow
-    }
-    exit
+    Write-Host "Mivan majom? csak nem megtaláltuk a github repot?" -ForegroundColor Red
 }
 
 Write-Host @"
@@ -243,26 +232,27 @@ function Get-MinecraftAlts {
         }
     }
 }
-
-function Check-Recording-Programs {
-    $recordingPrograms = @(
-        "obs", "bandicam", "nvspcapsvc", "fraps", "action", "mirillis", 
-        "xsplit", "dxtory", "nvidia share", "nvidia shadowplay", "nvcontainer",
+function Check-Recording-Programs-Advanced {
+    $recordingProcesses = @("obs", "bandicam", "nvspcapsvc", "fraps", "action", "mirillis", 
+        "xsplit", "dxtory","nvidia shadowplay", "nvcontainer",
         "medal", "camtasia", "screenrec", "screencast-o-matic", "sharex",
         "debut", "flashback", "snagit", "icecream screen recorder",
-        "loilo game recorder", "apowerrec", "movavi screen recorder"
-    )
+        "loilo game recorder", "apowerrec", "movavi screen recorder")
 
-    $foundPrograms = Get-Process | Where-Object { $recordingPrograms -contains $_.ProcessName.ToLower() }
+    $allProcesses = Get-Process | Select-Object ProcessName, Id, Description, Path, WorkingSet64
 
-    if ($foundPrograms) {
-        foreach ($program in $foundPrograms) {
-            Write-Host "Felvevő program fut! | $($program.ProcessName)" -ForegroundColor Red
+    foreach ($process in $allProcesses) {
+        if ($recordingProcesses -contains $process.ProcessName.ToLower()) {
+            $memoryUsageMB = [math]::Round($process.WorkingSet64 / 1MB, 2)  
+            if ($memoryUsageMB -ge 75) {  
+                Write-Host "Felvétel aktív: $($process.ProcessName) | Útvonal: $($process.Path)" -ForegroundColor Red
+            } 
         }
-    } 
+    }
 }
 
-Check-Recording-Programs
+Check-Recording-Programs-Advanced
+
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
     Write-Output "1 - Kilépés" 
