@@ -37,13 +37,14 @@ Write-Host @"
 "@ -ForegroundColor Cyan
 
 Write-Host "BalkerCraft SS-Tool" -ForegroundColor Yellow
-Write-Host "Made by Mestervivo alias George for Balkercraft" -ForegroundColor Yellow
+Write-Host "Made by Mestervivo alias George for Balkercraft `n" -ForegroundColor Yellow
 
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
 function Is-Windows11 {
-    $osVersion = (Get-ComputerInfo -Property "WindowsVersion").WindowsVersion
-    return $osVersion -ge 22000
+    $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+    $currentBuild = (Get-ItemProperty -Path $registryPath).CurrentBuild
+    return [int]$currentBuild -ge 22000
 }
 
 function Check-Services {
@@ -61,7 +62,7 @@ function Check-Services {
             }
 
             $serviceObj = Get-Service -Name $service
-            $startType = Get-WmiObject -Class Win32_Service -Filter "Name='$service'" | Select-Object -ExpandProperty StartMode
+            $startType = Get-CimInstance -ClassName Win32_Service -Filter "Name='$service'" | Select-Object -ExpandProperty StartMode
 
             $status = $serviceObj.Status
             $isRunning = $status -eq 'Running'
@@ -176,17 +177,15 @@ function Check-PrefetchLogs {
     $found = $false
 
     foreach ($filePattern in $filesToCheck) {
-        $files = Get-ChildItem -Path $tempPath -Filter $filePattern -File -ErrorAction SilentlyContinue
-        if ($files.Count -gt 0) {
+        $files = Get-ChildItem -Path $tempPath -Recurse -Filter $filePattern -ErrorAction SilentlyContinue
+        foreach ($file in $files) {
+            Write-Host "Log fájl: $($file.FullName)" -ForegroundColor Yellow
             $found = $true
-            foreach ($file in $files) {
-                Write-Host "Fájl: $($file.FullName) | Módosítva: $($file.LastWriteTime)" -ForegroundColor Yellow
-            }
         }
     }
 
     if (-not $found) {
-        Write-Host "Nem található gyanús fájl a temp mappában." -ForegroundColor Green
+        Write-Host "Nincs gyanús fájl a temp mappában" -ForegroundColor Green
     }
 }
 
@@ -245,6 +244,25 @@ function Get-MinecraftAlts {
     }
 }
 
+function Check-Recording-Programs {
+    $recordingPrograms = @(
+        "obs", "bandicam", "nvspcapsvc", "fraps", "action", "mirillis", 
+        "xsplit", "dxtory", "nvidia share", "nvidia shadowplay", "nvcontainer",
+        "medal", "camtasia", "screenrec", "screencast-o-matic", "sharex",
+        "debut", "flashback", "snagit", "icecream screen recorder",
+        "loilo game recorder", "apowerrec", "movavi screen recorder"
+    )
+
+    $foundPrograms = Get-Process | Where-Object { $recordingPrograms -contains $_.ProcessName.ToLower() }
+
+    if ($foundPrograms) {
+        foreach ($program in $foundPrograms) {
+            Write-Host "Felvevő program fut! | $($program.ProcessName)" -ForegroundColor Red
+        }
+    } 
+}
+
+Check-Recording-Programs
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
     Write-Output "1 - Kilépés" 
@@ -273,3 +291,6 @@ do {
         default { Write-Output "Ilyen lehetőség nincs koma" }
     }
 } while ($input -ne '1')
+
+
+
