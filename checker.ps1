@@ -191,7 +191,10 @@ function Download-SSPrograms {
         "https://github.com/Mestervivo007/bccheck/raw/main/USBDeview.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/journal-tool.exe",
-        "https://github.com/Mestervivo007/bccheck/raw/main/procexp.exe",    
+        "https://github.com/Mestervivo007/bccheck/raw/main/procexp.exe",   
+        "https://github.com/Mestervivo007/bccheck/raw/main/echo-journal.exe", 
+        "https://github.com/Mestervivo007/bccheck/raw/main/echo-usb.exe", 
+        "https://github.com/Mestervivo007/bccheck/raw/main/echo-userassist.exe", 
         "https://github.com/Mestervivo007/bccheck/raw/main/Everything-1.4.1.1022.x64-Setup.exe"
     )
 
