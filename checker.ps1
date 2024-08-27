@@ -8,11 +8,13 @@ function Test-Administrator {
 function Is-Windows11 {
     $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     $currentBuild = (Get-ItemProperty -Path $registryPath).CurrentBuild
-    return [int]$currentBuild -ge 22000
+    return [int]$currentBuild -ge 23000
 }
 
 if (-not (Test-Administrator)) {
-    Write-Host "Mivan majom? csak nem megtaláltuk a github repot?" -ForegroundColor Red
+    Write-Host "Mivan majom? Csak nem megtaláltuk a github repot?" -ForegroundColor Red
+    sleep 5
+    exit
 }
 
 Write-Host @"
@@ -188,9 +190,7 @@ function Download-SSPrograms {
     Write-Host "`nSS programok letöltése..." -ForegroundColor Cyan
     
     $urls = @(
-        "https://github.com/Mestervivo007/bccheck/raw/main/USBDeview.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
-        "https://github.com/Mestervivo007/bccheck/raw/main/journal-tool.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/procexp.exe",   
         "https://github.com/Mestervivo007/bccheck/raw/main/echo-journal.exe", 
         "https://github.com/Mestervivo007/bccheck/raw/main/echo-usb.exe", 
@@ -235,26 +235,6 @@ function Get-MinecraftAlts {
         }
     }
 }
-function Check-Recording-Programs-Advanced {
-    $recordingProcesses = @("obs", "bandicam", "nvspcapsvc", "fraps", "action", "mirillis", 
-        "xsplit", "dxtory","nvidia shadowplay", "nvcontainer",
-        "medal", "camtasia", "screenrec", "screencast-o-matic", "sharex",
-        "debut", "flashback", "snagit", "icecream screen recorder",
-        "loilo game recorder", "apowerrec", "movavi screen recorder")
-
-    $allProcesses = Get-Process | Select-Object ProcessName, Id, Description, Path, WorkingSet64
-
-    foreach ($process in $allProcesses) {
-        if ($recordingProcesses -contains $process.ProcessName.ToLower()) {
-            $memoryUsageMB = [math]::Round($process.WorkingSet64 / 1MB, 2)  
-            if ($memoryUsageMB -ge 75) {  
-                Write-Host "Felvétel aktív: $($process.ProcessName) | Útvonal: $($process.Path)" -ForegroundColor Red
-            } 
-        }
-    }
-}
-
-Check-Recording-Programs-Advanced
 
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
