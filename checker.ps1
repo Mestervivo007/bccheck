@@ -30,9 +30,9 @@ function Check-Services {
             if ($isWin11 -and $service -eq 'SgrmBroker') {
                 $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
                 if ($serviceObj -and $serviceObj.Status -eq 'Running') {
-                    Write-Host "- $service - Fut: Igen | Indítás Módja: $($serviceObj.StartType)" -ForegroundColor Yellow
+                    Write-Host "- $service - Fut: Igen | Indítás Módja: $($serviceObj.StartType)" -ForegroundColor Green
                 } else {
-                    Write-Host "- $service - Fut: Nem | Indítás Módja: $($serviceObj.StartType)" -ForegroundColor Yellow
+                    Write-Host "- $service - Fut: Nem | Indítás Módja: $($serviceObj.StartType) | Figyelmenkívül hagyva (WIN11)" -ForegroundColor Yellow
                 }
                 continue
             }
@@ -104,17 +104,23 @@ function Enable-And-Start-Services {
 
 function Check-MousePrograms {
     Write-Host "`nEgér program vizsgálata..." -ForegroundColor Cyan
-    $directories = @(
-        "C:\Users\$env:USERNAME\AppData\local\BYCOMBO-2\",
-        "C:\Users\$env:USERNAME\AppData\local\BY-COMBO2\",
-        "C:\Users\$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common\",
-        "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse\",
-        "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
-        "C:\Users\$env:USERNAME\AppData\Local\LGHUB\",
-        "C:\Users\$env:USERNAME\AppData\Local\Razer\",
-        "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\"
+$directories = @(
+        "C:\Users$env:USERNAME\AppData\local\BYCOMBO-2",
+        "C:\Users$env:USERNAME\AppData\local\BY-COMBO2",
+        "C:\Users$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common",
+        "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse",
+        "C:\Users$env:USERNAME\appdata\corsair\CUE",
+        "C:\Users$env:USERNAME\AppData\Local\LGHUB",
+        "C:\Users$env:USERNAME\AppData\Local\Razer",
+        "C:\Users$env:USERNAME\AppData\Roaming\ROCCAT\SWARM",
+        "C:\Program Files (x86)\Trust Gaming",
+        "C:\Program Files\SteelSeries\SteelSeries Engine",
+        "C:\Program Files (x86)\ZOWIE",
+        "C:\Program Files (x86)\A4Tech\Mouse",
+        "C:\Program Files\Cooler Master\Portal",
+        "C:\Program Files (x86)\MSI\Dragon Center",
+        "C:\Program Files (x86)\HyperX\Ngenuity"
     )
-
     $found = $false
     foreach ($directory in $directories) {
         if (Test-Path -Path $directory) {
