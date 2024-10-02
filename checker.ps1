@@ -1,22 +1,4 @@
 Clear-Host
-
-function Test-Administrator {
-    $isAdmin = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
-    return $isAdmin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-
-function Is-Windows11 {
-    $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-    $currentBuild = (Get-ItemProperty -Path $registryPath).CurrentBuild
-    return [int]$currentBuild -ge 23000
-}
-
-if (-not (Test-Administrator)) {
-    Write-Host "Mivan majom? Csak nem megtaláltuk a github repot?" -ForegroundColor Red
-    sleep 5
-    exit
-}
-
 Write-Host @"
   ____        _ _              ____            __ _   
  | __ )  __ _| | | _____ _ __ / ___|_ __ __ _ / _| |_ 
@@ -28,15 +10,16 @@ Write-Host @"
 "@ -ForegroundColor Cyan
 
 Write-Host "BalkerCraft SS-Tool" -ForegroundColor Yellow
-Write-Host "Made by Mestervivo alias George for Balkercraft `n" -ForegroundColor Yellow
+Write-Host "Made by Mestervivo alias George for Balkercraft" -ForegroundColor Yellow
 
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
 function Is-Windows11 {
-    $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-    $currentBuild = (Get-ItemProperty -Path $registryPath).CurrentBuild
-    return [int]$currentBuild -ge 22000
+    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+    $currentVersion = (Get-ItemProperty -Path $regPath -Name CurrentBuild -ErrorAction Stop).CurrentBuild
+    return $currentVersion -ge 22000
 }
+
 
 function Check-Services {
     Write-Output "`nSzolgáltatások ellenőrzése..." 
@@ -45,15 +28,17 @@ function Check-Services {
     foreach ($service in $services) {
         try {
             if ($isWin11 -and $service -eq 'SgrmBroker') {
-                $serviceExists = Get-Service -Name $service -ErrorAction SilentlyContinue
-                if ($null -eq $serviceExists) {
-                    Write-Host "- $service - Szolgáltatás nem létezik (WIN11)" -ForegroundColor Yellow
-                    continue
+                $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
+                if ($serviceObj -and $serviceObj.Status -eq 'Running') {
+                    Write-Host "- $service - Fut: Igen | Indítás Módja: $($serviceObj.StartType)" -ForegroundColor Green
+                } else {
+                    Write-Host "- $service - Fut: Nem | Indítás Módja: $($serviceObj.StartType)" -ForegroundColor Yellow
                 }
+                continue
             }
 
             $serviceObj = Get-Service -Name $service
-            $startType = Get-CimInstance -ClassName Win32_Service -Filter "Name='$service'" | Select-Object -ExpandProperty StartMode
+            $startType = Get-WmiObject -Class Win32_Service -Filter "Name='$service'" | Select-Object -ExpandProperty StartMode
 
             $status = $serviceObj.Status
             $isRunning = $status -eq 'Running'
@@ -127,14 +112,7 @@ function Check-MousePrograms {
         "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
         "C:\Users\$env:USERNAME\AppData\Local\LGHUB\",
         "C:\Users\$env:USERNAME\AppData\Local\Razer\",
-        "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\",
-        "C:\Program Files (x86)\Trust Gaming\",
-        "C:\Program Files\SteelSeries\SteelSeries Engine\",
-        "C:\Program Files (x86)\ZOWIE\",
-        "C:\Program Files (x86)\A4Tech\Mouse\",
-        "C:\Program Files\Cooler Master\Portal\",
-        "C:\Program Files (x86)\MSI\Dragon Center\",
-        "C:\Program Files (x86)\HyperX\Ngenuity\"
+        "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\"
     )
 
     $found = $false
@@ -144,13 +122,13 @@ function Check-MousePrograms {
             $files = Get-ChildItem -Path $directory -File
             $modified = $false
             foreach ($file in $files) {
-                if ($file.LastWriteTime -gt (Get-Date).AddMinutes(-60)) {
+                if ($file.LastWriteTime -gt (Get-Date).AddMinutes(-30)) {
                     Write-Host "Egér program: $($directory) fájl módosítva: $($file.LastWriteTime)" -ForegroundColor Yellow
                     $modified = $true
                 }
             }
             if (-not $modified) {
-                Write-Host "Egér program: $($directory) Nem lett módosítva az elmúlt 60 percben" -ForegroundColor Green
+                Write-Host "Egér program: $($directory) Nem lett módosítva az elmúlt 30 percben" -ForegroundColor Green
             }
         }
     }
@@ -164,19 +142,21 @@ function Check-PrefetchLogs {
     Write-Host "`nPrefetch logok vizsgálata..." -ForegroundColor Cyan
     $tempPath = [System.IO.Path]::GetTempPath()
 
-    $filesToCheck = @("JNativeHook*", "rar$ex*", "autoclicker.exe", "autoclicker", "AC.exe", "AC", "1337clicker.exe")
+    $filesToCheck = @("jnativehook*", "rar$ex*")
     $found = $false
 
     foreach ($filePattern in $filesToCheck) {
-        $files = Get-ChildItem -Path $tempPath -Recurse -Filter $filePattern -ErrorAction SilentlyContinue
-        foreach ($file in $files) {
-            Write-Host "Log fájl: $($file.FullName)" -ForegroundColor Yellow
+        $files = Get-ChildItem -Path $tempPath -Filter $filePattern -File -ErrorAction SilentlyContinue
+        if ($files.Count -gt 0) {
             $found = $true
+            foreach ($file in $files) {
+                Write-Host "Fájl: $($file.FullName) | Módosítva: $($file.LastWriteTime)" -ForegroundColor Yellow
+            }
         }
     }
 
     if (-not $found) {
-        Write-Host "Nincs gyanús fájl a temp mappában" -ForegroundColor Green
+        Write-Host "Nem található jnativehook vagy rar$ex fájl a temp mappában." -ForegroundColor Green
     }
 }
 
@@ -190,50 +170,27 @@ function Download-SSPrograms {
     Write-Host "`nSS programok letöltése..." -ForegroundColor Cyan
     
     $urls = @(
+        "https://github.com/Mestervivo007/bccheck/raw/main/USBDeview.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
-        "https://github.com/Mestervivo007/bccheck/raw/main/procexp.exe",   
-        "https://github.com/Mestervivo007/bccheck/raw/main/echo-journal.exe", 
-        "https://github.com/Mestervivo007/bccheck/raw/main/echo-usb.exe", 
-        "https://github.com/Mestervivo007/bccheck/raw/main/echo-userassist.exe", 
+        "https://github.com/Mestervivo007/bccheck/raw/main/journal-tool.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/Everything-1.4.1.1022.x64-Setup.exe"
     )
+    
+    $destinationFolder = "C:\Users\$env:USERNAME\Downloads\SS-Tools\"
 
-    $destinationFolder = "$env:USERPROFILE\Downloads\SS-Tools"
-
-    if (-not (Test-Path $destinationFolder)) {
+    if (-not (Test-Path -Path $destinationFolder)) {
         New-Item -ItemType Directory -Path $destinationFolder | Out-Null
     }
 
     foreach ($url in $urls) {
-        $fileName = [System.IO.Path]::GetFileName($url)
+        $fileName = Split-Path -Path $url -Leaf
         $destinationPath = Join-Path -Path $destinationFolder -ChildPath $fileName
+
+        Write-Host "Letöltés: $fileName..." -ForegroundColor Yellow
         Invoke-WebRequest -Uri $url -OutFile $destinationPath
-        Write-Host "Letöltve: $fileName" -ForegroundColor Green
-    }
-}
-
-function Get-MinecraftAlts {
-    Write-Host "`nMinecraft felhasználók összegyűjtése..." -ForegroundColor Cyan
-
-    $cachePath = "$env:APPDATA\.minecraft\usercache.json"
-    
-    if (-Not (Test-Path $cachePath)) {
-        Write-Host "Nem található usercache.json fájl" -ForegroundColor Red
-        return
     }
 
-    $cacheContent = Get-Content -Path $cachePath | ConvertFrom-Json
-    $usernames = $cacheContent | ForEach-Object { $_.name }
-
-    if ($usernames.Count -eq 0) {
-        Write-Host "Nincsenek alternatív felhasználók" -ForegroundColor Green
-    } else {
-        Write-Host "EGYES KLIENS TÍPUSOKNÁL NEM MÜKÖDIK MEGFELELŐEN A USERCACHE! AMENNYIBEN TÖBB MINT 10 ALT TALÁLHATÓ BENNE NAGY ESÉLLYEL FALSE ADATOK!" -ForegroundColor Yellow
-        Write-Host "`nAlternatív felhasználók:"
-        foreach ($username in $usernames) {
-            Write-Host "- $username" -ForegroundColor Yellow
-        }
-    }
+    Write-Host "SS programok sikeresen letöltve a $destinationFolder mappába." -ForegroundColor Green
 }
 
 function Show-Menu { 
@@ -245,9 +202,9 @@ function Show-Menu {
     Write-Output "5 - Egér program vizsgálata" 
     Write-Output "6 - Prefetch logok ellenőrzése"
     Write-Output "7 - SS programok letöltése"
-    Write-Output "8 - Minecraft karakterek lekérése"
 } 
 
+# Main loop to keep showing the menu and process multiple selections
 do {
     Show-Menu
     $input = Read-Host "Válassz egy opciót: "
@@ -259,11 +216,7 @@ do {
         '5' { Check-MousePrograms }
         '6' { Check-PrefetchLogs }
         '7' { Download-SSPrograms }
-        '8' { Get-MinecraftAlts }
         '1' { Write-Output "Kilépés..." }
         default { Write-Output "Ilyen lehetőség nincs koma" }
     }
 } while ($input -ne '1')
-
-
-
