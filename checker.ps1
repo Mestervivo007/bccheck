@@ -30,7 +30,7 @@ function Check-Services {
             if ($isWin11 -and $service -eq 'SgrmBroker') {
                 $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
                 if ($serviceObj -and $serviceObj.Status -eq 'Running') {
-                    Write-Host "- $service - Fut: Igen | Indítás Módja: $($serviceObj.StartType)" -ForegroundColor Green
+                    Write-Host "- $service - Fut: Igen | Indítás Módja: $($serviceObj.StartType)" -ForegroundColor Yellow
                 } else {
                     Write-Host "- $service - Fut: Nem | Indítás Módja: $($serviceObj.StartType)" -ForegroundColor Yellow
                 }
