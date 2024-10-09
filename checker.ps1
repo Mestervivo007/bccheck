@@ -176,10 +176,10 @@ function Download-SSPrograms {
     Write-Host "`nSS programok letöltése..." -ForegroundColor Cyan
     
     $urls = @(
-        "https://github.com/Mestervivo007/bccheck/raw/main/USBDeview.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
-        "https://github.com/Mestervivo007/bccheck/raw/main/journal-tool.exe",
-        "https://github.com/Mestervivo007/bccheck/raw/main/Everything-1.4.1.1022.x64-Setup.exe"
+        "https://github.com/Mestervivo007/bccheck/raw/main/procexp.exe",   
+        "https://github.com/Mestervivo007/bccheck/raw/main/echo-journal.exe", 
+        "https://github.com/Mestervivo007/bccheck/raw/main/echo-usb.exe", 
     )
     
     $destinationFolder = "C:\Users\$env:USERNAME\Downloads\SS-Tools\"
@@ -210,7 +210,6 @@ function Show-Menu {
     Write-Output "7 - SS programok letöltése"
 } 
 
-# Main loop to keep showing the menu and process multiple selections
 do {
     Show-Menu
     $input = Read-Host "Válassz egy opciót: "
