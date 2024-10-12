@@ -148,7 +148,7 @@ function Check-PrefetchLogs {
     Write-Host "`nPrefetch logok vizsgálata..." -ForegroundColor Cyan
     $tempPath = [System.IO.Path]::GetTempPath()
 
-    $filesToCheck = @("jnativehook*", "rar$ex*")
+    $filesToCheck = @("JNativeHook*", "rar$ex*", "autoclicker.exe", "autoclicker", "AC.exe", "AC", "1337clicker.exe")
     $found = $false
 
     foreach ($filePattern in $filesToCheck) {
@@ -162,7 +162,7 @@ function Check-PrefetchLogs {
     }
 
     if (-not $found) {
-        Write-Host "Nem található jnativehook vagy rar$ex fájl a temp mappában." -ForegroundColor Green
+         Write-Host "Nincs gyanús fájl a temp mappában" -ForegroundColor Green
     }
 }
 
@@ -176,10 +176,10 @@ function Download-SSPrograms {
     Write-Host "`nSS programok letöltése..." -ForegroundColor Cyan
     
     $urls = @(
-        "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/procexp.exe",   
         "https://github.com/Mestervivo007/bccheck/raw/main/echo-journal.exe", 
         "https://github.com/Mestervivo007/bccheck/raw/main/echo-usb.exe", 
+        "https://github.com/Mestervivo007/bccheck/raw/main/echo-userassist.exe"
     )
     
     $destinationFolder = "C:\Users\$env:USERNAME\Downloads\SS-Tools\"
