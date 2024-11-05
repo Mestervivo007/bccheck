@@ -1,4 +1,22 @@
 Clear-Host
+
+function Test-Administrator {
+    $isAdmin = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+    return $isAdmin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Is-Windows11 {
+    $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+    $currentBuild = (Get-ItemProperty -Path $registryPath).CurrentBuild
+    return [int]$currentBuild -ge 23000
+}
+
+if (-not (Test-Administrator)) {
+    Write-Host "Mivan majom? Csak nem megtaláltuk a github repot?" -ForegroundColor Red
+    sleep 5
+    exit
+}
+
 Write-Host @"
   ____        _ _              ____            __ _   
  | __ )  __ _| | | _____ _ __ / ___|_ __ __ _ / _| |_ 
@@ -10,7 +28,7 @@ Write-Host @"
 "@ -ForegroundColor Cyan
 
 Write-Host "BalkerCraft SS-Tool" -ForegroundColor Yellow
-Write-Host "Made by Mestervivo alias George for Balkercraft" -ForegroundColor Yellow
+Write-Host "Made by Mestervivo alias George for Balkercraft `n" -ForegroundColor Yellow
 
 $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog')
 
@@ -19,7 +37,6 @@ function Is-Windows11 {
     $currentVersion = (Get-ItemProperty -Path $regPath -Name CurrentBuild -ErrorAction Stop).CurrentBuild
     return $currentVersion -ge 22000
 }
-
 
 function Check-Services {
     Write-Output "`nSzolgáltatások ellenőrzése..." 
@@ -104,23 +121,24 @@ function Enable-And-Start-Services {
 
 function Check-MousePrograms {
     Write-Host "`nEgér program vizsgálata..." -ForegroundColor Cyan
-$directories = @(
-        "C:\Users$env:USERNAME\AppData\local\BYCOMBO-2",
-        "C:\Users$env:USERNAME\AppData\local\BY-COMBO2",
-        "C:\Users$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common",
-        "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse",
-        "C:\Users$env:USERNAME\appdata\corsair\CUE",
-        "C:\Users$env:USERNAME\AppData\Local\LGHUB",
-        "C:\Users$env:USERNAME\AppData\Local\Razer",
-        "C:\Users$env:USERNAME\AppData\Roaming\ROCCAT\SWARM",
-        "C:\Program Files (x86)\Trust Gaming",
-        "C:\Program Files\SteelSeries\SteelSeries Engine",
-        "C:\Program Files (x86)\ZOWIE",
-        "C:\Program Files (x86)\A4Tech\Mouse",
-        "C:\Program Files\Cooler Master\Portal",
-        "C:\Program Files (x86)\MSI\Dragon Center",
-        "C:\Program Files (x86)\HyperX\Ngenuity"
+    $directories = @(
+        "C:\Users\$env:USERNAME\AppData\local\BYCOMBO-2\",
+        "C:\Users\$env:USERNAME\AppData\local\BY-COMBO2\",
+        "C:\Users\$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common\",
+        "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse\",
+        "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
+        "C:\Users\$env:USERNAME\AppData\Local\LGHUB\",
+        "C:\Users\$env:USERNAME\AppData\Local\Razer\",
+        "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\",
+        "C:\Program Files (x86)\Trust Gaming\",
+        "C:\Program Files\SteelSeries\SteelSeries Engine\",
+        "C:\Program Files (x86)\ZOWIE\",
+        "C:\Program Files (x86)\A4Tech\Mouse\",
+        "C:\Program Files\Cooler Master\Portal\",
+        "C:\Program Files (x86)\MSI\Dragon Center\",
+        "C:\Program Files (x86)\HyperX\Ngenuity\"
     )
+
     $found = $false
     foreach ($directory in $directories) {
         if (Test-Path -Path $directory) {
@@ -128,13 +146,13 @@ $directories = @(
             $files = Get-ChildItem -Path $directory -File
             $modified = $false
             foreach ($file in $files) {
-                if ($file.LastWriteTime -gt (Get-Date).AddMinutes(-30)) {
+                if ($file.LastWriteTime -gt (Get-Date).AddMinutes(-60)) {
                     Write-Host "Egér program: $($directory) fájl módosítva: $($file.LastWriteTime)" -ForegroundColor Yellow
                     $modified = $true
                 }
             }
             if (-not $modified) {
-                Write-Host "Egér program: $($directory) Nem lett módosítva az elmúlt 30 percben" -ForegroundColor Green
+                Write-Host "Egér program: $($directory) Nem lett módosítva az elmúlt 60 percben" -ForegroundColor Green
             }
         }
     }
@@ -152,17 +170,15 @@ function Check-PrefetchLogs {
     $found = $false
 
     foreach ($filePattern in $filesToCheck) {
-        $files = Get-ChildItem -Path $tempPath -Filter $filePattern -File -ErrorAction SilentlyContinue
-        if ($files.Count -gt 0) {
+        $files = Get-ChildItem -Path $tempPath -Recurse -Filter $filePattern -ErrorAction SilentlyContinue
+        foreach ($file in $files) {
+            Write-Host "Log fájl: $($file.FullName)" -ForegroundColor Yellow
             $found = $true
-            foreach ($file in $files) {
-                Write-Host "Fájl: $($file.FullName) | Módosítva: $($file.LastWriteTime)" -ForegroundColor Yellow
-            }
         }
     }
 
     if (-not $found) {
-         Write-Host "Nincs gyanús fájl a temp mappában" -ForegroundColor Green
+        Write-Host "Nincs gyanús fájl a temp mappában" -ForegroundColor Green
     }
 }
 
@@ -176,27 +192,50 @@ function Download-SSPrograms {
     Write-Host "`nSS programok letöltése..." -ForegroundColor Cyan
     
     $urls = @(
+        "https://github.com/Mestervivo007/bccheck/raw/main/WinPrefetchView.exe",
         "https://github.com/Mestervivo007/bccheck/raw/main/procexp.exe",   
         "https://github.com/Mestervivo007/bccheck/raw/main/echo-journal.exe", 
         "https://github.com/Mestervivo007/bccheck/raw/main/echo-usb.exe", 
-        "https://github.com/Mestervivo007/bccheck/raw/main/echo-userassist.exe"
+        "https://github.com/Mestervivo007/bccheck/raw/main/echo-userassist.exe", 
+        "https://github.com/Mestervivo007/bccheck/raw/main/Everything-1.4.1.1022.x64-Setup.exe"
     )
-    
-    $destinationFolder = "C:\Users\$env:USERNAME\Downloads\SS-Tools\"
 
-    if (-not (Test-Path -Path $destinationFolder)) {
+    $destinationFolder = "$env:USERPROFILE\Downloads\SS-Tools"
+
+    if (-not (Test-Path $destinationFolder)) {
         New-Item -ItemType Directory -Path $destinationFolder | Out-Null
     }
 
     foreach ($url in $urls) {
-        $fileName = Split-Path -Path $url -Leaf
+        $fileName = [System.IO.Path]::GetFileName($url)
         $destinationPath = Join-Path -Path $destinationFolder -ChildPath $fileName
-
-        Write-Host "Letöltés: $fileName..." -ForegroundColor Yellow
         Invoke-WebRequest -Uri $url -OutFile $destinationPath
+        Write-Host "Letöltve: $fileName" -ForegroundColor Green
+    }
+}
+
+function Get-MinecraftAlts {
+    Write-Host "`nMinecraft felhasználók összegyűjtése..." -ForegroundColor Cyan
+
+    $cachePath = "$env:APPDATA\.minecraft\usercache.json"
+    
+    if (-Not (Test-Path $cachePath)) {
+        Write-Host "Nem található usercache.json fájl" -ForegroundColor Red
+        return
     }
 
-    Write-Host "SS programok sikeresen letöltve a $destinationFolder mappába." -ForegroundColor Green
+    $cacheContent = Get-Content -Path $cachePath | ConvertFrom-Json
+    $usernames = $cacheContent | ForEach-Object { $_.name }
+
+    if ($usernames.Count -eq 0) {
+        Write-Host "Nincsenek alternatív felhasználók" -ForegroundColor Green
+    } else {
+        Write-Host "EGYES KLIENS TÍPUSOKNÁL NEM MÜKÖDIK MEGFELELŐEN A USERCACHE! AMENNYIBEN TÖBB MINT 10 ALT TALÁLHATÓ BENNE NAGY ESÉLLYEL FALSE ADATOK!" -ForegroundColor Yellow
+        Write-Host "`nAlternatív felhasználók:"
+        foreach ($username in $usernames) {
+            Write-Host "- $username" -ForegroundColor Yellow
+        }
+    }
 }
 
 function Show-Menu { 
@@ -208,6 +247,7 @@ function Show-Menu {
     Write-Output "5 - Egér program vizsgálata" 
     Write-Output "6 - Prefetch logok ellenőrzése"
     Write-Output "7 - SS programok letöltése"
+    Write-Output "8 - Minecraft karakterek lekérése"
 } 
 
 do {
@@ -221,7 +261,11 @@ do {
         '5' { Check-MousePrograms }
         '6' { Check-PrefetchLogs }
         '7' { Download-SSPrograms }
+        '8' { Get-MinecraftAlts }
         '1' { Write-Output "Kilépés..." }
         default { Write-Output "Ilyen lehetőség nincs koma" }
     }
 } while ($input -ne '1')
+
+
+
