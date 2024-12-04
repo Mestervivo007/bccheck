@@ -238,6 +238,45 @@ function Get-MinecraftAlts {
     }
 }
 
+function Record-VPN-Checker {
+    Write-Host "`nEllenőrzés folyamatban..." -ForegroundColor Cyan
+
+    $recordingProcesses = @(
+        'mirillis', 'wmcap', 'playclaw', 'XSplit', 'Screencast', 'camtasia', 'dxtory', 'nvcontainer', 'obs64',
+        'bdcam', 'RadeonSettings', 'Fraps', 'CamRecorder', 'XSplit.Core', 'ShareX', 'Action', 'lightstream',
+        'streamlabs', 'webrtcvad', 'openbroadcastsoftware', 'movavi.screen.recorder', 'icecreamscreenrecorder', 'Medal'
+    )
+
+    foreach ($process in $recordingProcesses) {
+        try {
+            $proc = Get-Process -Name $process -ErrorAction SilentlyContinue
+            if ($proc) {
+                Write-Host "- Képernyő rögzítés alatt | $process " -ForegroundColor Red
+                Stop-Process -Name $process -Force
+            }
+        } catch {
+            Write-Host "- $process nem fut." -ForegroundColor Green
+        }
+    }
+
+    $vpnProcesses = @(
+        'pia-client', 'ProtonVPNService', 'IpVanish', 'WindScribe', 'ExpressVPN', 'NordVPN',
+        'CyberGhost', 'pia-tray', 'SurfShark', 'VyprVPN', 'HSSCP', 'TunnelBear', 'ProtonVPN'
+    )
+
+    foreach ($process in $vpnProcesses) {
+        try {
+            $proc = Get-Process -Name $process -ErrorAction SilentlyContinue
+            if ($proc) {
+                Write-Host "- VPN | $process" -ForegroundColor Red
+                Stop-Process -Name $process -Force
+            }
+        } catch {
+            Write-Host "- $process nem fut." -ForegroundColor Green
+        }
+    }
+}
+
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
     Write-Output "1 - Kilépés" 
@@ -248,6 +287,7 @@ function Show-Menu {
     Write-Output "6 - Prefetch logok ellenőrzése"
     Write-Output "7 - SS programok letöltése"
     Write-Output "8 - Minecraft karakterek lekérése"
+    Write-Output "9 - Általános ellenőrzés"
 } 
 
 do {
@@ -262,6 +302,7 @@ do {
         '6' { Check-PrefetchLogs }
         '7' { Download-SSPrograms }
         '8' { Get-MinecraftAlts }
+        '9' { Record-VPN-Checker }
         '1' { Write-Output "Kilépés..." }
         default { Write-Output "Ilyen lehetőség nincs koma" }
     }
