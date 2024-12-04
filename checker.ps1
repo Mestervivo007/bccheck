@@ -121,23 +121,34 @@ function Enable-And-Start-Services {
 
 function Check-MousePrograms {
     Write-Host "`nEgér program vizsgálata..." -ForegroundColor Cyan
-    $directories = @(
-        "C:\Users\$env:USERNAME\AppData\local\BYCOMBO-2\",
-        "C:\Users\$env:USERNAME\AppData\local\BY-COMBO2\",
-        "C:\Users\$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common\",
-        "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse\",
-        "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
-        "C:\Users\$env:USERNAME\AppData\Local\LGHUB\",
-        "C:\Users\$env:USERNAME\AppData\Local\Razer\",
-        "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\",
-        "C:\Program Files (x86)\Trust Gaming\",
-        "C:\Program Files\SteelSeries\SteelSeries Engine\",
-        "C:\Program Files (x86)\ZOWIE\",
-        "C:\Program Files (x86)\A4Tech\Mouse\",
-        "C:\Program Files\Cooler Master\Portal\",
-        "C:\Program Files (x86)\MSI\Dragon Center\",
-        "C:\Program Files (x86)\HyperX\Ngenuity\"
-    )
+$directories = @(
+    "C:\Users\$env:USERNAME\AppData\local\BYCOMBO-2\",
+    "C:\Users\$env:USERNAME\AppData\local\BY-COMBO2\",
+    "C:\Users\$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common\",
+    "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse\",
+    "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
+    "C:\Users\$env:USERNAME\AppData\Local\LGHUB\",
+    "C:\Users\$env:USERNAME\AppData\Local\Razer\",
+    "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\",
+    "C:\Program Files (x86)\Trust Gaming\",
+    "C:\Program Files\SteelSeries\SteelSeries Engine\",
+    "C:\Program Files (x86)\ZOWIE\",
+    "C:\Program Files (x86)\A4Tech\Mouse\",
+    "C:\Program Files\Cooler Master\Portal\",
+    "C:\Program Files (x86)\MSI\Dragon Center\",
+    "C:\Program Files (x86)\HyperX\Ngenuity\",
+    # 2024.12.04 - update
+    "C:\ProgramData\Glorious Core\userdata\guru\data\",
+    "C:\Program Files\SteelSeries\GG",
+    "C:\Blackweb Gaming AP\",
+    "C:\Program Files (x86)\FANTECH VX7 Gaming Mouse\",
+    "C:\Program Files (x86)\Driver Nombredemouse\INI_CN\",
+    "C:\Program Files (x86)\Driver Nombredemouse\INI_EN\",
+    "C:\Users\$env:USERNAME\AppData\Local\BYCOMBO2\mac\",
+    "C:\Users\$env:USERNAME\AppData\Local\BY-COMBO\",
+    "C:\Users\$env:USERNAME\AppData\Roaming\REDRAGON\GamingMouse\",
+    "C:\Users\$env:USERNAME\Documents\M711\"
+)
 
     $found = $false
     foreach ($directory in $directories) {
@@ -217,29 +228,71 @@ function Download-SSPrograms {
 function Get-MinecraftAlts {
     Write-Host "`nMinecraft felhasználók összegyűjtése..." -ForegroundColor Cyan
 
-    $cachePath = "$env:APPDATA\.minecraft\usercache.json"
-    
-    if (-Not (Test-Path $cachePath)) {
-        Write-Host "Nem található usercache.json fájl" -ForegroundColor Red
-        return
+    # Lunar Client
+    $lunarPath = "C:\Users\$env:USERNAME\.lunarclient\settings\game\accounts.json"
+    if (Test-Path $lunarPath) {
+        Write-Host "==Lunar Accounts==" -ForegroundColor Magenta
+        Get-Content $lunarPath | Select-String -Pattern "username" | ForEach-Object { Write-Host $_.Line -ForegroundColor Yellow }
     }
 
-    $cacheContent = Get-Content -Path $cachePath | ConvertFrom-Json
-    $usernames = $cacheContent | ForEach-Object { $_.name }
+    # .minecraft (usercache.json)
+    $minecraftCachePath = "$env:APPDATA\.minecraft\usercache.json"
+    if (Test-Path $minecraftCachePath) {
+        Write-Host "==minecraft Accounts==" -ForegroundColor Magenta
+        $minecraftData = Get-Content $minecraftCachePath | ConvertFrom-Json
+        $minecraftData | ForEach-Object { Write-Host "- " $_.name -ForegroundColor Yellow }
+        Write-Host "LEHETSÉGES FALSE ADATOK!" -ForegroundColor Yellow
+    }
 
-    if ($usernames.Count -eq 0) {
-        Write-Host "Nincsenek alternatív felhasználók" -ForegroundColor Green
-    } else {
-        Write-Host "EGYES KLIENS TÍPUSOKNÁL NEM MÜKÖDIK MEGFELELŐEN A USERCACHE! AMENNYIBEN TÖBB MINT 10 ALT TALÁLHATÓ BENNE NAGY ESÉLLYEL FALSE ADATOK!" -ForegroundColor Yellow
-        Write-Host "`nAlternatív felhasználók:"
-        foreach ($username in $usernames) {
-            Write-Host "- $username" -ForegroundColor Yellow
+    # Cosmic Client
+    $cosmicPath = "$env:APPDATA\.minecraft\cosmic\accounts.json"
+    if (Test-Path $cosmicPath) {
+        Write-Host "==Cosmic Client Accounts==" -ForegroundColor Magenta
+        Get-Content $cosmicPath | Select-String -Pattern "displayName" | ForEach-Object { Write-Host $_.Line -ForegroundColor Yellow }
+    }
+
+    # TLauncher (legacy és új)
+    $tlauncherLegacyPath = "$env:APPDATA\.tlauncher\legacy\Minecraft\game\tlauncher_profiles.json"
+    $tlauncherPath = "$env:APPDATA\.minecraft\TlauncherProfiles.json"
+    if (Test-Path $tlauncherLegacyPath) {
+        Write-Host "==TLauncher Accounts==" -ForegroundColor Magenta
+        Get-Content $tlauncherLegacyPath | Select-String -Pattern "username" | ForEach-Object { Write-Host $_.Line -ForegroundColor Yellow }
+    }
+    if (Test-Path $tlauncherPath) {
+        Write-Host "==TLauncher Accounts==" -ForegroundColor Magenta
+        Get-Content $tlauncherPath | Select-String -Pattern "displayName" | ForEach-Object { Write-Host $_.Line -ForegroundColor Yellow }
+    }
+
+    # Orbit Launcher
+    $orbitPath = "$env:APPDATA\Orbit-Launcher\launcher-minecraft\cachedImages\faces\"
+    if (Test-Path $orbitPath) {
+        Write-Host "==Orbit Accounts==" -ForegroundColor Magenta
+        Get-ChildItem -Path $orbitPath -Filter "*.png" | ForEach-Object { Write-Host $_.BaseName -ForegroundColor Yellow }
+    }
+
+    # Badlion Client
+    $badlionPath = "$env:APPDATA\Badlion Client\logs\launcher"
+    if (Test-Path $badlionPath) {
+        Write-Host "==Badlion Accounts==" -ForegroundColor Magenta
+        Get-ChildItem -Path $badlionPath -Recurse -File | ForEach-Object {
+            $lines = Select-String -Path $_.FullName -Pattern "Found user"
+            foreach ($line in $lines) {
+                $line -match "Found user: (.+)$"
+                if ($matches[1]) {
+                    Write-Host $matches[1] -ForegroundColor Yellow
+                }
+            }
         }
     }
+
+    Write-Host "`nEllenőrzés befejezve." -ForegroundColor Cyan
 }
 
+
+
+
+
 function Record-VPN-Checker {
-    Write-Host "`nEllenőrzés folyamatban..." -ForegroundColor Cyan
 
     $recordingProcesses = @(
         'mirillis', 'wmcap', 'playclaw', 'XSplit', 'Screencast', 'camtasia', 'dxtory', 'nvcontainer', 'obs64',
@@ -251,8 +304,7 @@ function Record-VPN-Checker {
         try {
             $proc = Get-Process -Name $process -ErrorAction SilentlyContinue
             if ($proc) {
-                Write-Host "- Képernyő rögzítés alatt | $process " -ForegroundColor Red
-                Stop-Process -Name $process -Force
+                Write-Host "- Lehetséges képernyő rögzítés | $process " -ForegroundColor Red
             }
         } catch {
             Write-Host "- $process nem fut." -ForegroundColor Green
@@ -269,13 +321,14 @@ function Record-VPN-Checker {
             $proc = Get-Process -Name $process -ErrorAction SilentlyContinue
             if ($proc) {
                 Write-Host "- VPN | $process" -ForegroundColor Red
-                Stop-Process -Name $process -Force
             }
         } catch {
             Write-Host "- $process nem fut." -ForegroundColor Green
         }
     }
 }
+
+Record-VPN-Checker
 
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
