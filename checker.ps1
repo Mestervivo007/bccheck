@@ -329,32 +329,39 @@ function Record-VPN-Checker {
     }
 }
 
-function Check-DevTools-Last30Min {
-    $devTools = @('python', 'Code', 'idea64', 'pycharm64', 'eclipse', 'clion64', 'rider64', 'webstorm64')
-    $threshold = (Get-Date).AddMinutes(-60)
-    $found = $false
+function Check-DevTools-Last60Min {
+    $startTime = (Get-Date).AddMinutes(-60)
 
-    foreach ($tool in $devTools) {
-        try {
-            $processes = Get-Process -Name $tool -ErrorAction SilentlyContinue
-            foreach ($process in $processes) {
-                if ($process.StartTime -ge $threshold) {
-                    Write-Host "- $($process.ProcessName).exe indítva ekkor: $($process.StartTime)" -ForegroundColor Yellow
+    $trackedApps = @("python.exe", "py.exe", "code.exe", "idea64.exe", "clion64.exe", "pycharm64.exe", "webstorm64.exe", "datagrip64.exe")
+
+
+    $prefetchPath = "C:\Windows\Prefetch"
+
+
+    if (-not (Test-Path $prefetchPath)) {
+        Write-Host "A Prefetch mappa nem elérhető. Futtasd a scriptet rendszergazdaként!" -ForegroundColor Red
+        return
+    }
+    $found = $false
+    Get-ChildItem -Path $prefetchPath -Filter "*.pf" | ForEach-Object {
+        $fileName = $_.Name
+        foreach ($app in $trackedApps) {
+            if ($fileName -match [regex]::Escape($app)) {
+                if ($_.LastWriteTime -gt $startTime) {
+                    Write-Host "- $app indítva: $($_.LastWriteTime)" -ForegroundColor Yellow
                     $found = $true
                 }
             }
-        } catch {
-            
         }
     }
 
     if (-not $found) {
-        return  
+        Write-Host "Nem indult fejlesztői alkalmazás az elmúlt 30 percben." -ForegroundColor Green
     }
 }
 
 Write-Host "---------------" -ForegroundColor Magenta
-Check-DevTools-Last30Min
+Check-DevTools-Last60Min
 Record-VPN-Checker
 Write-Host "---------------" -ForegroundColor Magenta
 
