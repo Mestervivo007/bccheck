@@ -124,6 +124,7 @@ function Check-MousePrograms {
 $directories = @(
     "C:\Users\$env:USERNAME\AppData\local\BYCOMBO-2\",
     "C:\Users\$env:USERNAME\AppData\local\BY-COMBO2\",
+    "C:\Users\$env:USERNAME\AppData\local\Glorious\",
     "C:\Users\$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common\",
     "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse\",
     "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
@@ -328,7 +329,34 @@ function Record-VPN-Checker {
     }
 }
 
+function Check-DevTools-Last30Min {
+    $devTools = @('python', 'Code', 'idea64', 'pycharm64', 'eclipse', 'clion64', 'rider64', 'webstorm64')
+    $threshold = (Get-Date).AddMinutes(-60)
+    $found = $false
+
+    foreach ($tool in $devTools) {
+        try {
+            $processes = Get-Process -Name $tool -ErrorAction SilentlyContinue
+            foreach ($process in $processes) {
+                if ($process.StartTime -ge $threshold) {
+                    Write-Host "- $($process.ProcessName).exe indítva ekkor: $($process.StartTime)" -ForegroundColor Yellow
+                    $found = $true
+                }
+            }
+        } catch {
+            
+        }
+    }
+
+    if (-not $found) {
+        return  
+    }
+}
+
+Write-Host "---------------" -ForegroundColor Magenta
+Check-DevTools-Last30Min
 Record-VPN-Checker
+Write-Host "---------------" -ForegroundColor Magenta
 
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
@@ -360,6 +388,5 @@ do {
         default { Write-Output "Ilyen lehetőség nincs koma" }
     }
 } while ($input -ne '1')
-
 
 
