@@ -38,7 +38,7 @@ $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog', 'Dnsc
 $warningServices = @('Dhcp', 'WinDefend', 'Wecsvc')
 
 function Check-Services {
-    Write-Output "`nSzolgáltatások ellenőrzése..." 
+    Write-Output "`n===== Szolgáltatások ellenőrzése ====="
     $isWin11 = Is-Windows11
 
     foreach ($service in $services) {
@@ -98,7 +98,9 @@ function Check-Services {
 
     Check-Process-Uptime -ProcessName "javaw" -AltProcessName "java"
     Check-Process-Uptime -ProcessName "explorer"
+        Write-Output "`n===== Szolgáltatások ellenőrzése ====="
 }
+
 
 
 function Check-Process-Uptime {
@@ -351,7 +353,7 @@ function Record-VPN-Checker {
 }
 
 function Check-DevTools-Last60Min {
-    $startTime = (Get-Date).AddMinutes(-60)
+    $startTime = (Get-Date).AddMinutes(-120)
 
     $trackedApps = @("python.exe", "py.exe", "code.exe", "idea64.exe", "clion64.exe", "pycharm64.exe", "webstorm64.exe", "datagrip64.exe", "Anydesk2.exe")
 
@@ -377,7 +379,7 @@ function Check-DevTools-Last60Min {
     }
 
     if (-not $found) {
-        Write-Host "Nem indult fejlesztői alkalmazás az elmúlt 30 percben." -ForegroundColor Green
+        Write-Host "Nem indult fejlesztői alkalmazás az elmúlt 120 percben." -ForegroundColor Green
     }
 }
 
