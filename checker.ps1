@@ -310,7 +310,6 @@ function Get-MinecraftAlts {
         Write-Host "==Lunar Accounts==" -ForegroundColor Magenta
         Get-Content $lunarPath | Select-String -Pattern "username" | ForEach-Object { Write-Host $_.Line -ForegroundColor Yellow }
     }
-9
     # .minecraft (usercache.json)
     $minecraftCachePath = "$env:APPDATA\.minecraft\usercache.json"
     if (Test-Path $minecraftCachePath) {
