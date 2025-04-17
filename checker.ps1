@@ -12,7 +12,6 @@ if (-not (Test-Administrator)) {
     exit
 }
 
-
 Write-Host @"
   ____        _ _              ____            __ _   
  | __ )  __ _| | | _____ _ __ / ___|_ __ __ _ / _| |_ 
@@ -38,7 +37,9 @@ $services = @('SysMain', 'PcaSvc', 'DPS', 'BAM', 'SgrmBroker', 'EventLog', 'Dnsc
 $warningServices = @('Dhcp', 'WinDefend', 'Wecsvc')
 
 function Check-Services {
-    Write-Output "`n===== Szolgáltatások ellenőrzése ====="
+    Write-Host "`n╔══════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host   "║      Szolgáltatások ellenőrzése      ║" -ForegroundColor Cyan
+    Write-Host   "╚══════════════════════════════════════╝" -ForegroundColor Cyan
     $isWin11 = Is-Windows11
 
     foreach ($service in $services) {
@@ -98,7 +99,6 @@ function Check-Services {
 
     Check-Process-Uptime -ProcessName "javaw" -AltProcessName "java"
     Check-Process-Uptime -ProcessName "explorer"
-        Write-Output "`n===== Szolgáltatások ellenőrzése ====="
 }
 
 
@@ -143,7 +143,9 @@ function Enable-And-Start-Services {
 }
 
 function Check-MousePrograms {
-    Write-Host "`nEgér program vizsgálata..." -ForegroundColor Cyan
+    Write-Host "`n╔══════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host   "║        Egér program vizsgálata       ║" -ForegroundColor Cyan
+    Write-Host   "╚══════════════════════════════════════╝" -ForegroundColor Cyan
 $directories = @(
     "C:\Users\$env:USERNAME\AppData\local\BYCOMBO-2\",
     "C:\Users\$env:USERNAME\AppData\local\BY-COMBO2\",
@@ -181,13 +183,13 @@ $directories = @(
             $files = Get-ChildItem -Path $directory -File
             $modified = $false
             foreach ($file in $files) {
-                if ($file.LastWriteTime -gt (Get-Date).AddMinutes(-60)) {
+                if ($file.LastWriteTime -gt (Get-Date).AddMinutes(-120)) {
                     Write-Host "Egér program: $($directory) fájl módosítva: $($file.LastWriteTime)" -ForegroundColor Yellow
                     $modified = $true
                 }
             }
             if (-not $modified) {
-                Write-Host "Egér program: $($directory) Nem lett módosítva az elmúlt 60 percben" -ForegroundColor Green
+                Write-Host "Egér program: $($directory) Nem lett módosítva az elmúlt 120 percben" -ForegroundColor Green
             }
         }
     }
@@ -198,7 +200,9 @@ $directories = @(
 }
 
 function Check-PrefetchLogs {
-    Write-Host "`nPrefetch logok vizsgálata..." -ForegroundColor Cyan
+    Write-Host "`n╔══════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host   "║      Prefetch logok vizsgálata       ║" -ForegroundColor Cyan
+    Write-Host   "╚══════════════════════════════════════╝" -ForegroundColor Cyan
     $tempPath = [System.IO.Path]::GetTempPath()
 
     $filesToCheck = @("JNativeHook*", "rar$ex*", "autoclicker.exe", "autoclicker", "AC.exe", "AC", "1337clicker.exe")
@@ -250,7 +254,9 @@ function Download-SSPrograms {
 }
 
 function Get-MinecraftAlts {
-    Write-Host "`nMinecraft felhasználók összegyűjtése..." -ForegroundColor Cyan
+    Write-Host "`n╔══════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host   "║ Minecraft felhasználók összegyűjtése ║" -ForegroundColor Cyan
+    Write-Host   "╚══════════════════════════════════════╝" -ForegroundColor Cyan
 
     # Lunar Client
     $lunarPath = "C:\Users\$env:USERNAME\.lunarclient\settings\game\accounts.json"
@@ -258,7 +264,7 @@ function Get-MinecraftAlts {
         Write-Host "==Lunar Accounts==" -ForegroundColor Magenta
         Get-Content $lunarPath | Select-String -Pattern "username" | ForEach-Object { Write-Host $_.Line -ForegroundColor Yellow }
     }
-
+9
     # .minecraft (usercache.json)
     $minecraftCachePath = "$env:APPDATA\.minecraft\usercache.json"
     if (Test-Path $minecraftCachePath) {
@@ -355,38 +361,92 @@ function Record-VPN-Checker {
 function Check-DevTools-Last60Min {
     $startTime = (Get-Date).AddMinutes(-120)
 
-    $trackedApps = @("python.exe", "py.exe", "code.exe", "idea64.exe", "clion64.exe", "pycharm64.exe", "webstorm64.exe", "datagrip64.exe", "Anydesk2.exe")
-
+    $trackedApps = @(
+        "python.exe", "py.exe", "code.exe", "idea64.exe", "clion64.exe",
+        "pycharm64.exe", "webstorm64.exe", "datagrip64.exe", "Anydesk2.exe"
+    )
 
     $prefetchPath = "C:\Windows\Prefetch"
 
+    Write-Host "`n╔══════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host   "║    Gyanús fejlesztői tevékenység     ║" -ForegroundColor Cyan
+    Write-Host   "╚══════════════════════════════════════╝" -ForegroundColor Cyan
 
     if (-not (Test-Path $prefetchPath)) {
-        Write-Host "A Prefetch mappa nem elérhető. Futtasd a scriptet rendszergazdaként!" -ForegroundColor Red
+        Write-Host " A Prefetch mappa nem elérhető. Futtasd a scriptet rendszergazdaként!" -ForegroundColor Red
         return
     }
+
     $found = $false
-    Get-ChildItem -Path $prefetchPath -Filter "*.pf" | ForEach-Object {
-        $fileName = $_.Name
+    $recentPrefetch = Get-ChildItem -Path $prefetchPath -Filter "*.pf" | Where-Object {
+        $_.LastWriteTime -gt $startTime
+    }
+
+    foreach ($item in $recentPrefetch) {
+        $fileName = $item.Name
         foreach ($app in $trackedApps) {
             if ($fileName -match [regex]::Escape($app)) {
-                if ($_.LastWriteTime -gt $startTime) {
-                    Write-Host "- $app indítva: $($_.LastWriteTime)" -ForegroundColor Yellow
-                    $found = $true
-                }
+                $timeStr = $item.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")
+                Write-Host " $app indítva: $timeStr" -ForegroundColor Yellow
+                $found = $true
             }
         }
     }
 
     if (-not $found) {
-        Write-Host "Nem indult fejlesztői alkalmazás az elmúlt 120 percben." -ForegroundColor Green
+        Write-Host " Nem indult fejlesztői alkalmazás az elmúlt 120 percben." -ForegroundColor Green
     }
 }
 
-Write-Host "---------------" -ForegroundColor Magenta
-Check-DevTools-Last60Min
+function Check-AntiTampering {
+
+
+    $hostname = $env:COMPUTERNAME
+    $regOwner = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").RegisteredOwner
+    Write-Host "Számitógép: $hostname" -ForegroundColor Gray
+    Write-Host "Fiók: $regOwner" -ForegroundColor Gray
+
+    $biosInfo = Get-WmiObject Win32_BIOS
+    if ($biosInfo.SerialNumber -match "Default|To be filled|123456|0000|OEM") {
+        Write-Host "BIOS Serial gyanús: $($biosInfo.SerialNumber)" -ForegroundColor Yellow
+    } else {
+        Write-Host "BIOS Serial: $($biosInfo.SerialNumber)" -ForegroundColor Green
+    }
+
+    
+    Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object {$_.MACAddress -ne $null} | ForEach-Object {
+        if ($_.MACAddress -match "^00|^FF") {
+            Write-Host "Gyanús MAC Address: $($_.MACAddress)" -ForegroundColor Yellow
+        }
+    }
+}
+function Write-SectionHeader {
+    param (
+        [string]$Title
+    )
+
+    $line = "═" * ($Title.Length + 4)
+    Write-Host "`n╔$line╗" -ForegroundColor Cyan
+    Write-Host "║  $Title  ║" -ForegroundColor Cyan
+    Write-Host "╚$line╝" -ForegroundColor Cyan
+}
+
+Write-SectionHeader "Általános lekérdezések indítása"
+Check-AntiTampering
 Record-VPN-Checker
-Write-Host "---------------" -ForegroundColor Magenta
+Check-DevTools-Last60Min
+
+
+function Write-InfoLine {
+    param(
+        [string]$Text,
+        [string]$Icon = "🔹",
+        [string]$Color = "White"
+    )
+    Write-Host "$Icon $Text" -ForegroundColor $Color
+}
+
+
 
 function Show-Menu { 
     Write-Output "`nVálasztható opciók:"  
