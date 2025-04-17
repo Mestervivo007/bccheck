@@ -147,34 +147,80 @@ function Check-MousePrograms {
     Write-Host   "║        Egér program vizsgálata       ║" -ForegroundColor Cyan
     Write-Host   "╚══════════════════════════════════════╝" -ForegroundColor Cyan
 $directories = @(
+    # Glorious régi
     "C:\Users\$env:USERNAME\AppData\local\BYCOMBO-2\",
     "C:\Users\$env:USERNAME\AppData\local\BY-COMBO2\",
-    "C:\Users\$env:USERNAME\AppData\local\Glorious\",
-    "C:\Users\$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common\",
-    "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse\",
-    "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
-    "C:\Users\$env:USERNAME\AppData\Local\LGHUB\",
-    "C:\Users\$env:USERNAME\AppData\Local\Razer\",
-    "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\",
-    "C:\Program Files (x86)\Trust Gaming\",
-    "C:\Program Files\SteelSeries\SteelSeries Engine\",
-    "C:\Program Files (x86)\ZOWIE\",
-    "C:\Program Files (x86)\A4Tech\Mouse\",
-    "C:\Program Files\Cooler Master\Portal\",
-    "C:\Program Files (x86)\MSI\Dragon Center\",
-    "C:\Program Files (x86)\HyperX\Ngenuity\",
-    # 2024.12.04 - update
-    "C:\ProgramData\Glorious Core\userdata\guru\data\",
-    "C:\Program Files\SteelSeries\GG",
-    "C:\Blackweb Gaming AP\",
-    "C:\Program Files (x86)\FANTECH VX7 Gaming Mouse\",
-    "C:\Program Files (x86)\Driver Nombredemouse\INI_CN\",
-    "C:\Program Files (x86)\Driver Nombredemouse\INI_EN\",
     "C:\Users\$env:USERNAME\AppData\Local\BYCOMBO2\mac\",
     "C:\Users\$env:USERNAME\AppData\Local\BY-COMBO\",
+    
+    # Glorious Core új
+    "C:\ProgramData\Glorious Core\userdata\guru\data\",
+    "C:\Users\$env:USERNAME\AppData\Local\Glorious\",
+    
+    # ASUS / Armoury Crate
+    "C:\Users\$env:USERNAME\documents\ASUS\ROG\ROG Armoury\common\",
+    "C:\Program Files\ASUS\Armoury Crate\",
+    
+    # A4Tech / Bloody / Oscar
+    "C:\Program Files (x86)\Bloody7\Bloody7\Data\Mouse\",
+    "C:\Program Files (x86)\Oscar Mouse Editor\",
+    "C:\Program Files (x86)\A4Tech\Mouse\",
+    
+    # Corsair
+    "C:\Users\$env:USERNAME\appdata\corsair\CUE\",
+    "C:\Program Files (x86)\Corsair\Corsair Utility Engine\",
+    "C:\Program Files\Corsair\iCUE\",
+
+    # Logitech
+    "C:\Users\$env:USERNAME\AppData\Local\LGHUB\",
+    "C:\Program Files\Logitech Gaming Software\",
+    
+    # Razer
+    "C:\Users\$env:USERNAME\AppData\Local\Razer\",
+    "C:\Program Files (x86)\Razer\Synapse\",
+    
+    # Roccat
+    "C:\Users\$env:USERNAME\AppData\Roaming\ROCCAT\SWARM\",
+    
+    # SteelSeries
+    "C:\Program Files (x86)\SteelSeries\SteelSeries Engine\",
+    "C:\Program Files\SteelSeries\SteelSeries Engine\",
+    "C:\Program Files\SteelSeries\GG\",
+    
+    # Cooler Master
+    "C:\Program Files\Cooler Master\Portal\",
+
+    # MSI
+    "C:\Program Files (x86)\MSI\Dragon Center\",
+
+    # HyperX
+    "C:\Program Files (x86)\HyperX\Ngenuity\",
+
+    # Redragon
     "C:\Users\$env:USERNAME\AppData\Roaming\REDRAGON\GamingMouse\",
-    "C:\Users\$env:USERNAME\Documents\M711\"
+    "C:\Users\$env:USERNAME\Documents\M711\",
+
+    # Trust Gaming
+    "C:\Program Files (x86)\Trust Gaming\",
+
+    # ZOWIE
+    "C:\Program Files (x86)\ZOWIE\",
+
+    # Fantech
+    "C:\Program Files (x86)\FANTECH VX7 Gaming Mouse\",
+
+    # Blackweb
+    "C:\Blackweb Gaming AP\",
+
+    # Noname/Generic kínai driverek (pl. „Driver Nombredemouse”)
+    "C:\Program Files (x86)\Driver Nombredemouse\INI_CN\",
+    "C:\Program Files (x86)\Driver Nombredemouse\INI_EN\",
+
+    # Lehetséges saját user script helyek
+    "C:\Users\$env:USERNAME\AppData\Roaming\MouseMacros\",
+    "C:\Users\$env:USERNAME\Documents\Mouse Scripts\"
 )
+
 
     $found = $false
     foreach ($directory in $directories) {
@@ -431,8 +477,123 @@ function Write-SectionHeader {
     Write-Host "╚$line╝" -ForegroundColor Cyan
 }
 
+function  Detect-AutoHotKey {
+    $ahkProcesses = Get-Process | Where-Object { $_.Name -like "*ahk*" -or $_.Path -like "*.ahk" }
+    if ($ahkProcesses) {
+        foreach ($proc in $ahkProcesses) {
+            Write-Host " AutoHotKey gyanús processz: $($proc.Name)" -ForegroundColor Red
+        }
+    }
+
+    $ahkFiles = Get-ChildItem -Path "$env:USERPROFILE" -Recurse -Include *.ahk -ErrorAction SilentlyContinue
+    if ($ahkFiles.Count -gt 0) {
+        foreach ($file in $ahkFiles) {
+            Write-Host "Talált AHK fájl: $($file.FullName)" -ForegroundColor Red
+        }
+    } 
+}
+
+function Check-SuspiciousStartup {
+    Write-Host "`n╔══════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host   "║    Startup Programok ellenőrzése     ║" -ForegroundColor Cyan
+    Write-Host   "╚══════════════════════════════════════╝" -ForegroundColor Cyan
+    $startupPaths = @(
+        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run",
+        "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run",
+        "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+    )
+
+    foreach ($path in $startupPaths) {
+        try {
+            if (Test-Path $path) {
+                Get-ItemProperty -Path $path | ForEach-Object {
+                    foreach ($property in $_.PSObject.Properties) {
+                        if ($property.Name -ne "PSPath" -and $property.Value) {
+                            Write-Host ": $($property.Name) = $($property.Value)" -ForegroundColor Yellow
+                        }
+                    }
+                }
+            }
+        } catch {
+            Write-Host " Nem sikerült elérni: $path" -ForegroundColor Red
+        }
+    }
+}
+
+function Hunt-RegistryKeys {
+
+$suspiciousKeys = @(
+    # Cheat Engine
+    "HKCU:\Software\Cheat Engine",
+    "HKLM:\Software\Cheat Engine",
+    "HKCU:\Software\CheatEngine",
+    "HKLM:\Software\CheatEngine",
+
+    # Autoclickerek
+    "HKCU:\Software\AutoHotkey",
+    "HKLM:\Software\AutoHotkey",
+    "HKCU:\Software\autoclicker",
+    "HKCU:\Software\autoclicke",
+    "HKCU:\Software\AutoClick",
+    "HKCU:\Software\GS Auto Clicker",
+    "HKCU:\Software\OP Auto Clicker",
+    "HKCU:\Software\SpeedAutoClicker",
+
+    #  Kliensek
+    "HKCU:\Software\vape",
+    "HKCU:\Software\VapeV4",
+    "HKCU:\Software\VapeV2",
+    "HKCU:\Software\Aristois",
+    "HKCU:\Software\LunarClient\mods",
+    "HKCU:\Software\Impact",
+    "HKCU:\Software\Wurst",
+
+    # Autoclickerek
+    "HKCU:\Software\JNativeHook",
+    "HKCU:\Software\JInput",
+    "HKCU:\Software\JNIGameHook",
+    "HKCU:\Software\A4Tech",
+    "HKLM:\SYSTEM\CurrentControlSet\Services\HIDMacros",
+    "HKCU:\Software\Interception",
+    "HKCU:\Software\InterceptionDriver",
+    "HKCU:\Software\mousehook",
+    "HKCU:\Software\Rewasd",
+    "HKCU:\Software\InputMapper",
+    "HKCU:\Software\DS4Windows",
+
+    # Java injector 
+    "HKCU:\Software\JavaInjector",
+    "HKCU:\Software\MinecraftHack",
+    "HKCU:\Software\MinecraftInjector",
+
+    # DLL injector
+    "HKCU:\Software\Extreme Injector",
+    "HKCU:\Software\GH Injector",
+    "HKCU:\Software\DLLInjector",
+    "HKCU:\Software\Process Hacker",
+    "HKCU:\Software\ProtonVPN", 
+
+    # Egyéb 
+    "HKCU:\Software\AimAssist",
+    "HKCU:\Software\TriggerBot",
+    "HKCU:\Software\HackTool",
+    "HKCU:\Software\MacroRecorder"
+)
+
+
+    foreach ($key in $suspiciousKeys) {
+        if (Test-Path $key) {
+            Write-Host "Gyanús registry kulcs találat: $key" -ForegroundColor Red
+        }
+    }
+}
+
+
+
 Write-SectionHeader "Általános lekérdezések indítása"
 Check-AntiTampering
+Detect-AutoHotKey
+Hunt-RegistryKeys
 Record-VPN-Checker
 Check-DevTools-Last60Min
 
@@ -459,6 +620,7 @@ function Show-Menu {
     Write-Output "7 - SS programok letöltése"
     Write-Output "8 - Minecraft karakterek lekérése"
     Write-Output "9 - Általános ellenőrzés"
+    Write-Output "10 - Automatikusan elindult alkalmazások (IN DEVELOPMENT)"
 } 
 
 do {
@@ -474,6 +636,7 @@ do {
         '7' { Download-SSPrograms }
         '8' { Get-MinecraftAlts }
         '9' { Record-VPN-Checker }
+        '10' { Check-SuspiciousStartup }
         '1' { Write-Output "Kilépés..." }
         default { Write-Output "Ilyen lehetőség nincs koma" }
     }
